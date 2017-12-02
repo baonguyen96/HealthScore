@@ -1,0 +1,5 @@
+0004	85	per min
+0024	83	per min
+0034	84	per min
+0054	92	per min
+0074	98	per min

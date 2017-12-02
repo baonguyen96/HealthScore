@@ -1,0 +1,5 @@
+0004	0	per min
+0014	0	per min
+0034	0	per min
+0064	0	per min
+0094	0	per min

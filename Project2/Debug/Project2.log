@@ -1,0 +1,26 @@
+﻿  Main.c
+c:\users\bao\desktop\codes\c\project2\project2\main.c(55): warning C4018: '<': signed/unsigned mismatch
+c:\users\bao\desktop\codes\c\project2\project2\main.c(67): warning C4018: '<': signed/unsigned mismatch
+c:\users\bao\desktop\codes\c\project2\project2\main.c(207): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\users\bao\desktop\codes\c\project2\project2\main.c(223): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\bao\desktop\codes\c\project2\project2\main.c(284): warning C4047: 'function': 'char *' differs in levels of indirection from 'int'
+c:\users\bao\desktop\codes\c\project2\project2\main.c(284): warning C4024: 'itoa': different types for formal and actual parameter 2
+c:\users\bao\desktop\codes\c\project2\project2\main.c(288): warning C4047: 'function': 'char *' differs in levels of indirection from 'int'
+c:\users\bao\desktop\codes\c\project2\project2\main.c(288): warning C4024: 'itoa': different types for formal and actual parameter 2
+c:\users\bao\desktop\codes\c\project2\project2\main.c(315): warning C4047: 'function': 'char *' differs in levels of indirection from 'int'
+c:\users\bao\desktop\codes\c\project2\project2\main.c(315): warning C4024: 'itoa': different types for formal and actual parameter 2
+c:\users\bao\desktop\codes\c\project2\project2\main.c(320): warning C4133: 'function': incompatible types - from 'char *' to 'FILE *const '
+c:\users\bao\desktop\codes\c\project2\project2\main.c(324): warning C4047: 'function': 'char *' differs in levels of indirection from 'int'
+c:\users\bao\desktop\codes\c\project2\project2\main.c(324): warning C4024: 'itoa': different types for formal and actual parameter 2
+c:\users\bao\desktop\codes\c\project2\project2\main.c(328): warning C4047: 'function': 'char *' differs in levels of indirection from 'int'
+c:\users\bao\desktop\codes\c\project2\project2\main.c(328): warning C4024: 'itoa': different types for formal and actual parameter 2
+c:\users\bao\desktop\codes\c\project2\project2\main.c(298): warning C4101: 'score': unreferenced local variable
+c:\users\bao\desktop\codes\c\project2\project2\main.c(357): warning C4047: 'function': 'char *' differs in levels of indirection from 'int'
+c:\users\bao\desktop\codes\c\project2\project2\main.c(357): warning C4024: 'itoa': different types for formal and actual parameter 2
+c:\users\bao\desktop\codes\c\project2\project2\main.c(361): warning C4047: 'function': 'char *' differs in levels of indirection from 'int'
+c:\users\bao\desktop\codes\c\project2\project2\main.c(361): warning C4024: 'itoa': different types for formal and actual parameter 2
+c:\users\bao\desktop\codes\c\project2\project2\main.c(384): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\bao\desktop\codes\c\project2\project2\main.c(292): warning C4172: returning address of local variable or temporary: results
+c:\users\bao\desktop\codes\c\project2\project2\main.c(332): warning C4172: returning address of local variable or temporary: results
+c:\users\bao\desktop\codes\c\project2\project2\main.c(370): warning C4172: returning address of local variable or temporary: results
+  Project2.vcxproj -> C:\Users\Bao\Desktop\Codes\C\Project2\Debug\Project2.exe
