@@ -102,6 +102,14 @@ int isValidMenuOption(char* menuOption) {
 }
 
 
+void deallocate(char** strs, int size) {
+	for (int i = 0; i < size; i++) {
+		free(strs[i]);
+	}
+	free(strs);
+}
+
+
 char getMenu() {
 	printf("%s\n", "a) Enter file location");
 	printf("%s\n", "b) Time interval");
@@ -166,8 +174,7 @@ char* getFileLocation() {
 }
 
 
-int readFiles(const char* folder) {
-	int status = false;
+void readFiles(const char* folder) {
 	char line[buffer] = { 0 };
 	char* token = NULL;
 	int length = strlen(folder) + 20;
@@ -227,8 +234,6 @@ int readFiles(const char* folder) {
 
 	free(fileName);
 	printf("%s\n", "Finish populating data");
-
-	return status;
 }
 
 
@@ -261,9 +266,7 @@ int getTime(char* whatTime, int min) {
 char** getTemp(int time) {
 	float totalTemp = 0;
 	int totalFound = 0;
-	char *results[2];
-	float score = 0;
-	char* status = NULL;
+	char ** results = (char**)malloc(2);
 
 	for (int i = 0; i < btIndex; i++) {
 		if (bt[i].time == time) {
@@ -273,24 +276,29 @@ char** getTemp(int time) {
 	}
 
 	if (totalFound == 0) {
+		free(results);
 		return NULL;
 	}
 
 	float average = totalTemp / totalFound;
 
 	if (97 <= average && average <= 99) {
+		results[scoreValue] = (char*)malloc(1);
 		results[scoreValue] = itoa(1, buffer, 10);
+		results[scoreStatus] = (char*)malloc(7);
 		results[scoreStatus] = "Normal";
 	}
 	else {
+		results[scoreValue] = (char*)malloc(1);
 		results[scoreValue] = itoa(0, buffer, 10);
+		results[scoreStatus] = (char*)malloc(9);
 		results[scoreStatus] = "Abnormal";
 	}
 
 	return results;
 }
 
-
+// working on this
 char** getPress(int time) {
 	int totalFound = 0;
 	float totalBpd = 0, totalBps = 0, score;
@@ -306,6 +314,7 @@ char** getPress(int time) {
 	}
 
 	if (totalFound == 0) {
+		free(results);
 		return NULL;
 	}
 
@@ -334,9 +343,7 @@ char** getPress(int time) {
 char** getRate(int time) {
 	float totalRate = 0;
 	int totalFound = 0;
-	char *results[2];
-	float score = 0;
-	char* status = NULL;
+	char ** results = (char**)malloc(2);
 
 	for (int i = 0; i < btIndex; i++) {
 		if (hr[i].time == time) {
@@ -346,17 +353,22 @@ char** getRate(int time) {
 	}
 
 	if (totalFound == 0) {
+		free(results);
 		return NULL;
 	}
 
 	float average = totalRate / totalFound;
 
 	if (60 <= average && average <= 100) {
+		results[scoreValue] = (char*)malloc(1);
 		results[scoreValue] = itoa(1, buffer, 10);
+		results[scoreStatus] = (char*)malloc(7);
 		results[scoreStatus] = "Normal";
 	}
 	else {
+		results[scoreValue] = (char*)malloc(1);
 		results[scoreValue] = itoa(0, buffer, 10);
+		results[scoreStatus] = (char*)malloc(12);
 		if (average > 100) {
 			results[scoreStatus] = "Tachycardia";
 		}
@@ -371,7 +383,7 @@ char** getRate(int time) {
 
 void getHealthScore(int time) {
 	char** temp = getTemp(time);
-	char** press = getPress(time);
+	char** press = NULL;
 	char** rate = getRate(time);
 
 	if (temp == NULL || press == NULL || rate == NULL) {
@@ -383,28 +395,36 @@ void getHealthScore(int time) {
 
 	printf("%s\n", "Body Temperature     | Blood Pressure         | Heart Rate");
 	printf("%s\n", "-------------------- + ---------------------- + ------------------");
-	printf("%-4.1fF%24c|", 97.5, ' ');
-	// 97.5F | 80 – 120 mm Hg | 58 bmp
-	// Normal | Normal | Bradycardia
-	printf("\n%s\n", "-------------------- + ---------------------- + ------------------");
-	printf("At time %d, the Health Score was %.2f/100\n", time, score);
+	printf("%-4.1fF%16c| %-23s| %d bpm\n", 97.5, ' ', "80 - 120 mm Hg", 58);
+	printf("%-21s| %-23s| %-23s\n", "Normal", "Normal", "Bradycardia");
+	printf("%s\n", "-------------------- + ---------------------- + ------------------");
+	printf("At time %d, the Health Score was %.2f/100\n", 55, 70.0);
 	printf("%s\n", "------------------------------------------------------------------");
+
+	/*deallocate(temp, 2);
+	deallocate(press, 2);
+	deallocate(rate, 2);*/
 }
 
 
 void testPrint() {
-	printf("%s\n", "Body Temperature     | Blood Pressure         | Heart Rate");
-	printf("%s\n", "-------------------- + ---------------------- + ------------------");
-	printf("%-4.1fF%16c|%24c|", 97.5, ' ', ' ');
-	// 97.5F | 80 – 120 mm Hg | 58 bmp
-	// Normal | Normal | Bradycardia
-	printf("\n%s\n", "-------------------- + ---------------------- + ------------------");
-	printf("At time %d, the Health Score was %.2f/100\n", 55, 70.0);
-	printf("%s\n", "------------------------------------------------------------------");
+	printf("%s\n", "--------------------------------------------------------");
+	printf("      Statistical Values between time %d and %d\n", 40, 80);
+	printf("%s\n", "---------+-----------+---------------------+------------");
+	printf("%s\n", "Variable + Body Temp + Blood Pressure      + Heart Rate ");
+	printf("%s\n", "---------+-----------+---------------------+------------");
+	printf("%8s +%6.2fF%4c+%6.1f -%6.1f mm Hg + %6.1f bpm\n", "Min", 97.00, ' ', 76.0, 118.0, 62.0);
+	printf("%8s +%6.2fF%4c+%6.1f -%6.1f mm Hg + %6.1f bpm\n", "Max", 98.00, ' ', 79.0, 119.0, 68.0);
+	printf("%8s +%6.2fF%4c+%6.1f -%6.1f mm Hg + %6.1f bpm\n", "Average", 97.50, ' ', 77.0, 118.0, 65.3);
+	printf("%8s +%6.2fF%4c+%6.1f -%6.1f mm Hg + %6.1f bpm\n", "StdDev", 0.50, ' ', 1.5, 0.5, 3.0);
+	printf("%s\n", "---------+-----------+---------------------+------------");
 }
 
 
 int main(int argc, const char** argv) {
+	testPrint();
+	return;
+
 	char menuOption = 0;
 	char* fileLocation = NULL;
 	int hasFileLocation = false;
@@ -420,7 +440,8 @@ int main(int argc, const char** argv) {
 		case 'A':
 			fileLocation = getFileLocation();
 			hasFileLocation = true;					
-			readFiles(fileLocation);	
+			readFiles(fileLocation);
+			//free(fileLocation);	// dont need to?
 			break;
 		case 'b':
 		case 'B':
