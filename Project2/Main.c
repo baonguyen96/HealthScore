@@ -8,20 +8,35 @@
 #include<stdlib.h>
 #include<ctype.h>
 #include<string.h>
+#include<math.h>
+#include<limits.h>
+#include<float.h>
 
 
 // constants
-#define		true			1
-#define		false			0
-#define		buffer			200
-#define		structSize		50
-#define		minTime			0
-#define		maxTime			100
-#define		scoreStatus		0
-#define		scoreValue		1
-#define		scoreRealVal	2
-#define		lowPressure		2
-#define		highPressure	3
+#define		true					1
+#define		false					0
+#define		BUFFER					200
+#define		STRUCT_SIZE				50
+#define		MIN_TIME				0
+#define		MAX_TIME				100
+#define		SCORE_STATUS			0
+#define		SCORE_VALUE				1
+#define		SCORE_REAL_VALUE		2
+#define		LOW_PRESSURE			2
+#define		HIGH_PRESSURE			3
+#define		STAT_MIN				0
+#define		STAT_MAX				1
+#define		STAT_AVERAGE			2
+#define		STAT_DEVIATION			3
+#define		STAT_MIN_BPD			0
+#define		STAT_MAX_BPD			1
+#define		STAT_AVERAGE_BPD		2
+#define		STAT_DEVIATION_BPD		3
+#define		STAT_MIN_BPS			4
+#define		STAT_MAX_BPS			5
+#define		STAT_AVERAGE_BPS		6
+#define		STAT_DEVIATION_BPS		7
 
 
 // structures
@@ -45,9 +60,9 @@ struct HR {
 
 
 // global vars
-struct BT bt[structSize] = { 0 };
-struct BP bp[structSize] = { 0 };
-struct HR hr[structSize] = { 0 };
+struct BT bt[STRUCT_SIZE] = { 0 };
+struct BP bp[STRUCT_SIZE] = { 0 };
+struct HR hr[STRUCT_SIZE] = { 0 };
 int btIndex = 0, bpIndex = 0, hrIndex = 0;
 
 
@@ -112,21 +127,22 @@ void deallocate(char** strs, int size) {
 
 
 char getMenu() {
-	printf("%s\n", "a) Enter file location");
-	printf("%s\n", "b) Time interval");
-	printf("%s\n", "c) Get health score");
-	printf("%s\n", "d) Get statistical values");
-	printf("%s\n", "e) Exit");
+	printf("%s:\n", "Menu");
+	printf("   %s\n", "a) Enter file location");
+	printf("   %s\n", "b) Time interval");
+	printf("   %s\n", "c) Get health score");
+	printf("   %s\n", "d) Get statistical values");
+	printf("   %s\n", "e) Exit");
 
 	int isValidInput = false;
-	char input[buffer];
+	char input[BUFFER];
 
 	do {
 		printf("%s: ", "Your choice");
 		scanf("%[^\n]%*c", input);
 
 		if (isValidMenuOption(input) == false) {
-			printf("%s\n", "Invalid  choice dumbass. Enter again.");
+			printf("%s\n", "Invalid  choice. Enter again.");
 		}
 
 	} while (isValidMenuOption(input) == false);
@@ -137,13 +153,13 @@ char getMenu() {
 
 char* getFileLocation() {
 	int isValidInput = false;
-	char input[buffer];
+	char input[BUFFER];
 	char* fullPath = NULL;
 	FILE* file = NULL;
 
 	do {
 		printf("%s", "Enter file location (folder): ");
-		fgets(input, buffer, stdin);
+		fgets(input, BUFFER, stdin);
 		size_t ln = strlen(input) - 1;
 		if (input[ln] == '\n') {
 			input[ln] = '\0';
@@ -176,7 +192,7 @@ char* getFileLocation() {
 
 
 void readFiles(const char* folder) {
-	char line[buffer] = { 0 };
+	char line[BUFFER] = { 0 };
 	char* token = NULL;
 	int length = strlen(folder) + 20;
 	char* fileName = (char*)malloc(length);
@@ -188,7 +204,7 @@ void readFiles(const char* folder) {
 		snprintf(fileName, length, "%s\\BP_%d.txt", folder, i);
 		file = fopen(fileName, "r");
 
-		while (fgets(line, buffer, file) != NULL) {
+		while (fgets(line, BUFFER, file) != NULL) {
 			token = strtok(line, DEL);
 			bp[bpIndex].time = atoi(token);
 			token = strtok(NULL, DEL);
@@ -206,7 +222,7 @@ void readFiles(const char* folder) {
 		snprintf(fileName, length, "%s\\BT_%d.txt", folder, i);
 		file = fopen(fileName, "r");
 
-		while (fgets(line, buffer, file) != NULL) {
+		while (fgets(line, BUFFER, file) != NULL) {
 			token = strtok(line, DEL);
 			bt[btIndex].time = atoi(token);
 			token = strtok(NULL, DEL);
@@ -222,7 +238,7 @@ void readFiles(const char* folder) {
 		snprintf(fileName, length, "%s\\HR_%d.txt", folder, i);
 		file = fopen(fileName, "r");
 
-		while (fgets(line, buffer, file) != NULL) {
+		while (fgets(line, BUFFER, file) != NULL) {
 			token = strtok(line, DEL);
 			hr[hrIndex].time = atoi(token);
 			token = strtok(NULL, DEL);
@@ -240,11 +256,11 @@ void readFiles(const char* folder) {
 
 int getTime(char* whatTime, int min) {
 	int time = -1;
-	char input[buffer] = { 0 };
+	char input[BUFFER] = { 0 };
 
 	do {
 		printf("Enter %stime: ", whatTime);
-		fgets(input, buffer, stdin);
+		fgets(input, BUFFER, stdin);
 
 		if (!isInt(input)) {
 			printf("Error: not an integer\n");
@@ -252,8 +268,8 @@ int getTime(char* whatTime, int min) {
 		}
 
 		time = atoi(input);
-		if (!isIntInRange(time, min, maxTime)) {
-			printf("Error: time must be between %d and %d\n", min, maxTime);
+		if (!isIntInRange(time, min, MAX_TIME)) {
+			printf("Error: time must be between %d and %d\n", min, MAX_TIME);
 			time = -1;
 			continue;
 		}
@@ -284,29 +300,28 @@ char** getTemp(int time) {
 	float average = totalTemp / totalFound;
 
 	if (97 <= average && average <= 99) {
-		results[scoreStatus] = (char*)malloc(8);
-		results[scoreStatus] = "Normal";
-		results[scoreValue] = (char*)malloc(2);
-		results[scoreValue] = "1";
+		results[SCORE_STATUS] = (char*)malloc(8);
+		results[SCORE_STATUS] = "Normal";
+		results[SCORE_VALUE] = (char*)malloc(2);
+		results[SCORE_VALUE] = "1";
 	}
 	else {
-		results[scoreStatus] = (char*)malloc(10);
-		results[scoreStatus] = "Abnormal";
-		results[scoreValue] = (char*)malloc(2);
-		results[scoreValue] = "0";
+		results[SCORE_STATUS] = (char*)malloc(10);
+		results[SCORE_STATUS] = "Abnormal";
+		results[SCORE_VALUE] = (char*)malloc(2);
+		results[SCORE_VALUE] = "0";
 	}
-	results[scoreRealVal] = (char*)malloc(10);
-	snprintf(results[scoreRealVal], 10, "%f", average);
+	results[SCORE_REAL_VALUE] = (char*)malloc(10);
+	snprintf(results[SCORE_REAL_VALUE], 10, "%f", average);
 
 	return results;
 }
 
-// working on this
+
 char** getPress(int time) {
-	int totalFound = 0, lowPress = INT_MAX, highPress = INT_MIN;
+	int totalFound = 0;
 	float totalBpd = 0, totalBps = 0, averageBpd = 0, averageBps = 0;
 	char **results = (char**)malloc(4);
-	char* status = NULL;
 
 	for (int i = 0; i < btIndex; i++) {
 		if (bp[i].time == time) {
@@ -326,33 +341,33 @@ char** getPress(int time) {
 	}
 
 	if (averageBpd <= 80 && averageBps <= 120) {
-		results[scoreStatus] = (char*)malloc(10);
-		results[scoreStatus] = "Normal";
-		results[scoreValue] = (char*)malloc(2);
-		results[scoreValue] = "1";
+		results[SCORE_STATUS] = (char*)malloc(10);
+		results[SCORE_STATUS] = "Normal";
+		results[SCORE_VALUE] = (char*)malloc(2);
+		results[SCORE_VALUE] = "1";
 	}
 	else if ((80 < averageBpd && averageBpd <= 89) ||
 		(120 < averageBps && averageBps <= 139)) {
-		results[scoreStatus] = (char*)malloc(16);
-		results[scoreStatus] = "Prehypertension";
-		results[scoreValue] = (char*)malloc(4);
-		results[scoreValue] = "0.5";
+		results[SCORE_STATUS] = (char*)malloc(16);
+		results[SCORE_STATUS] = "Prehypertension";
+		results[SCORE_VALUE] = (char*)malloc(4);
+		results[SCORE_VALUE] = "0.5";
 	}
 	else if (averageBpd >= 90 || averageBps >= 140) {
-		results[scoreStatus] = (char*)malloc(16);
-		results[scoreStatus] = "Hypertension";
-		results[scoreValue] = (char*)malloc(2);
-		results[scoreValue] = "0";
+		results[SCORE_STATUS] = (char*)malloc(16);
+		results[SCORE_STATUS] = "Hypertension";
+		results[SCORE_VALUE] = (char*)malloc(2);
+		results[SCORE_VALUE] = "0";
 	}
 	/*else {	// never happen
 		free(results);
 		return NULL;
 	}*/
 
-	results[lowPressure] = (char*)malloc(10);
-	snprintf(results[lowPressure], 10, "%d", (int)averageBpd);
-	results[highPressure] = (char*)malloc(10);
-	snprintf(results[highPressure], 10, "%d", (int)averageBps);
+	results[LOW_PRESSURE] = (char*)malloc(10);
+	snprintf(results[LOW_PRESSURE], 10, "%d", (int)averageBpd);
+	results[HIGH_PRESSURE] = (char*)malloc(10);
+	snprintf(results[HIGH_PRESSURE], 10, "%d", (int)averageBps);
 
 	return results;
 }
@@ -378,24 +393,24 @@ char** getRate(int time) {
 	float average = totalRate / totalFound;
 
 	if (60 <= average && average <= 100) {
-		results[scoreStatus] = (char*)malloc(7);
-		results[scoreStatus] = "Normal";
-		results[scoreValue] = (char*)malloc(2);
-		results[scoreValue] = "1";
+		results[SCORE_STATUS] = (char*)malloc(7);
+		results[SCORE_STATUS] = "Normal";
+		results[SCORE_VALUE] = (char*)malloc(2);
+		results[SCORE_VALUE] = "1";
 	}
 	else {
-		results[scoreStatus] = (char*)malloc(13);
+		results[SCORE_STATUS] = (char*)malloc(13);
 		if (average > 100) {
-			results[scoreStatus] = "Tachycardia";
+			results[SCORE_STATUS] = "Tachycardia";
 		}
 		else {
-			results[scoreStatus] = "Bradycardia";
+			results[SCORE_STATUS] = "Bradycardia";
 		}
-		results[scoreValue] = (char*)malloc(2);
-		results[scoreValue] = "0";
+		results[SCORE_VALUE] = (char*)malloc(2);
+		results[SCORE_VALUE] = "0";
 	}
-	results[scoreRealVal] = (char*)malloc(10);
-	snprintf(results[scoreRealVal], 10, "%f", average);
+	results[SCORE_REAL_VALUE] = (char*)malloc(10);
+	snprintf(results[SCORE_REAL_VALUE], 10, "%f", average);
 
 	return results;
 }
@@ -405,20 +420,23 @@ void getHealthScore(int time) {
 	// calculate
 	char** temp = getTemp(time);
 	char** rate = getRate(time);
-	char** press = getPress(time);	// correct
+	char** press = getPress(time);	
 
 	if (temp == NULL || press == NULL || rate == NULL) {
 		printf("Error: cannot find data for time %d\n", time);
 		return;
 	}
 
-	double score = 20 * atof(temp[scoreValue]) + 25 * atof(press[scoreValue]) + 30 * atof(rate[scoreValue]) + 25;
+	double score = 20 * atof(temp[SCORE_VALUE]) + 25 * atof(press[SCORE_VALUE]) + 30 * atof(rate[SCORE_VALUE]) + 25;
 
 	// display
+	printf("%s\n", "------------------------------------------------------------------");
 	printf("%s\n", "Body Temperature     | Blood Pressure         | Heart Rate");
 	printf("%s\n", "-------------------- + ---------------------- + ------------------");
-	printf("%-4.1fF%16c| %-3d - %-3d mm Hg        | %d bpm\n", atof(temp[scoreRealVal]), ' ', atoi(press[lowPressure]), atoi(press[highPressure]), (int) atof(rate[scoreRealVal]));
-	printf("%-21s| %-23s| %-23s\n", temp[scoreStatus], press[scoreStatus], rate[scoreStatus]);
+	printf("%-4.1fF%16c| %-3d - %-3d mm Hg        | %d bpm\n", 
+		atof(temp[SCORE_REAL_VALUE]), ' ', atoi(press[LOW_PRESSURE]), 
+		atoi(press[HIGH_PRESSURE]), (int) atof(rate[SCORE_REAL_VALUE]));
+	printf("%-21s| %-23s| %-23s\n", temp[SCORE_STATUS], press[SCORE_STATUS], rate[SCORE_STATUS]);
 	printf("%s\n", "-------------------- + ---------------------- + ------------------");
 	printf("At time %d, the Health Score was %d/100\n", time, (int) score);
 	printf("%s\n", "------------------------------------------------------------------");
@@ -429,19 +447,212 @@ void getHealthScore(int time) {
 }
 
 
+float getStdDev(float* nums, int size, float average) {
+	double sum = 0, var = 0;
+	
+	for (int i = 0; i < size; i++) {
+		sum += pow((nums[i] - average), 2);
+	}
+
+	var = sum / size;
+
+	return (float)sqrt(var);
+}
+
+
+char** getTempStats(int startTime, int endTime) {
+	float totalTemp = 0, maxTemp = 0, minTemp = FLT_MAX;
+	int totalFound = 0;
+	char ** results = (char**)malloc(4);
+	float values[STRUCT_SIZE] = { 0 };
+
+	for (int t = startTime; t <= endTime; t++) {
+		for (int i = 0; i < btIndex; i++) {
+			if (bt[i].time == t) {
+				totalTemp += bt[i].value;
+				values[totalFound++] = bt[i].value;
+
+				// max min 
+				if (bt[i].value > maxTemp) {
+					maxTemp = bt[i].value;
+				}
+				else if (bt[i].value < minTemp) {
+					minTemp = bt[i].value;
+				}
+			}
+		}
+	}
+
+	if (totalFound == 0) {
+		free(results);
+		return NULL;
+	}
+
+	float average = totalTemp / totalFound;
+	float stdDev = getStdDev(values, totalFound, average);
+
+	results[STAT_MIN] = (char*)malloc(10);
+	results[STAT_MAX] = (char*)malloc(10);
+	results[STAT_AVERAGE] = (char*)malloc(10);
+	results[STAT_DEVIATION] = (char*)malloc(10);
+	snprintf(results[STAT_MIN], 10, "%f", minTemp);
+	snprintf(results[STAT_MAX], 10, "%f", maxTemp);
+	snprintf(results[STAT_AVERAGE], 10, "%f", average);
+	snprintf(results[STAT_DEVIATION], 10, "%f", stdDev);
+	
+	return results;
+}
+
+
+char** getPressStats(int startTime, int endTime) {
+	int totalFound = 0, minBpd = INT_MAX, minBps = INT_MAX, maxBpd = 0, maxBps = 0;
+	float totalBpd = 0, totalBps = 0;
+	char **results = (char**)malloc(4);
+	float bpdVals[STRUCT_SIZE] = { 0 };
+	float bpsVals[STRUCT_SIZE] = { 0 };
+
+	for (int t = startTime; t <= endTime; t++) {
+		for (int i = 0; i < btIndex; i++) {
+			if (bp[i].time == t) {
+				totalBpd += bp[i].bpd;
+				totalBps += bp[i].bps;
+				bpdVals[totalFound] = (float)bp[i].bpd;
+				bpsVals[totalFound++] = (float)bp[i].bps;
+
+				// max min
+				if (bp[i].bpd > maxBpd) {
+					maxBpd = bp[i].bpd;
+				}
+				else if (bp[i].bpd < minBpd) {
+					minBpd = bp[i].bpd;
+				}
+
+				if (bp[i].bps > maxBps) {
+					maxBps = bp[i].bps;
+				}
+				else if (bp[i].bps < minBps) {
+					minBps = bp[i].bps;
+				}
+			}
+		}
+	}
+
+	if (totalFound == 0) {
+		free(results);
+		return NULL;
+	}
+
+	float averageBpd = totalBpd / totalFound;
+	float averageBps = totalBps / totalFound;
+	float stdDevBpd = getStdDev(bpdVals, totalFound, averageBpd);
+	float stdDevBps = getStdDev(bpsVals, totalFound, averageBps);
+
+	results[STAT_MIN_BPD] = (char*)malloc(10);
+	results[STAT_MAX_BPD] = (char*)malloc(10);
+	results[STAT_AVERAGE_BPD] = (char*)malloc(10);
+	results[STAT_DEVIATION_BPD] = (char*)malloc(10);
+	results[STAT_MIN_BPS] = (char*)malloc(10);
+	results[STAT_MAX_BPS] = (char*)malloc(10);
+	results[STAT_AVERAGE_BPS] = (char*)malloc(10);
+	results[STAT_DEVIATION_BPS] = (char*)malloc(10);
+	snprintf(results[STAT_MIN_BPD], 10, "%d", minBpd);
+	snprintf(results[STAT_MAX_BPD], 10, "%d", maxBpd);
+	snprintf(results[STAT_AVERAGE_BPD], 10, "%f", averageBpd);
+	snprintf(results[STAT_DEVIATION_BPD], 10, "%f", stdDevBpd);
+	snprintf(results[STAT_MIN_BPS], 10, "%d", minBps);
+	snprintf(results[STAT_MAX_BPS], 10, "%d", maxBps);
+	snprintf(results[STAT_AVERAGE_BPS], 10, "%f", averageBps);
+	snprintf(results[STAT_DEVIATION_BPS], 10, "%f", stdDevBps);
+
+	return results;
+}
+
+
+char** getRateStats(int startTime, int endTime) {
+	float totalHeartRate = 0, maxRate = 0, minRate = FLT_MIN;
+	int totalFound = 0;
+	char ** results = (char**)malloc(4);
+	float values[STRUCT_SIZE] = { 0 };
+
+	for (int t = startTime; t <= endTime; t++) {
+		for (int i = 0; i < btIndex; i++) {
+			if (hr[i].time == t) {
+				totalHeartRate += hr[i].value;
+				values[totalFound++] = hr[i].value;
+
+				// max min 
+				if (hr[i].value > maxRate) {
+					maxRate = hr[i].value;
+				}
+				else if (hr[i].value < minRate) {
+					minRate = hr[i].value;
+				}
+			}
+		}
+	}
+
+	if (totalFound == 0) {
+		free(results);
+		return NULL;
+	}
+
+	float average = totalHeartRate / totalFound;
+	float stdDev = getStdDev(values, totalFound, average);
+
+	results[STAT_MIN] = (char*)malloc(10);
+	results[STAT_MAX] = (char*)malloc(10);
+	results[STAT_AVERAGE] = (char*)malloc(10);
+	results[STAT_DEVIATION] = (char*)malloc(10);
+	snprintf(results[STAT_MIN], 10, "%f", minRate);
+	snprintf(results[STAT_MAX], 10, "%f", maxRate);
+	snprintf(results[STAT_AVERAGE], 10, "%f", average);
+	snprintf(results[STAT_DEVIATION], 10, "%f", stdDev);
+
+	return results;
+}
+
+
 void getStatValues(int startTime, int endTime) {
 	// calculate 
+	char** temp = getTempStats(startTime, endTime);
+	char** rate = getRateStats(startTime, endTime);
+	char** press = getPressStats(startTime, endTime);
 
 	// display
+	if (temp == NULL || press == NULL || rate == NULL) {
+		printf("Error: cannot find data for interval [%d, %d]\n", startTime, endTime);
+		return;
+	}
+
 	printf("%s\n", "--------------------------------------------------------");
 	printf("      Statistical Values between time %d and %d\n", startTime, endTime);
 	printf("%s\n", "---------+-----------+---------------------+------------");
 	printf("%s\n", "Variable + Body Temp + Blood Pressure      + Heart Rate ");
 	printf("%s\n", "---------+-----------+---------------------+------------");
-	printf("%8s |%6.2fF%4c|%6.1f -%6.1f mm Hg | %5.1f bpm\n", "Min", 97.00, ' ', 76.0, 118.0, 62.0);
-	printf("%8s |%6.2fF%4c|%6.1f -%6.1f mm Hg | %5.1f bpm\n", "Max", 98.00, ' ', 79.0, 119.0, 68.0);
-	printf("%8s |%6.2fF%4c|%6.1f -%6.1f mm Hg | %5.1f bpm\n", "Average", 97.50, ' ', 77.0, 118.0, 65.3);
-	printf("%8s |%6.2fF%4c|%6.1f -%6.1f mm Hg | %5.1f bpm\n", "StdDev", 0.50, ' ', 1.5, 0.5, 3.0);
+	printf("%8s |%6.2fF%4c|%6.1f -%6.1f mm Hg | %5.1f bpm\n", 
+		"Min", 
+		(float)atof(temp[STAT_MIN]), ' ', 
+		(float)atof(press[STAT_MIN_BPD]),
+		(float)atof(press[STAT_MIN_BPS]),
+		(float)atof(rate[STAT_MIN]));
+	printf("%8s |%6.2fF%4c|%6.1f -%6.1f mm Hg | %5.1f bpm\n", 
+		"Max", 
+		(float)atof(temp[STAT_MAX]), ' ',
+		(float)atof(press[STAT_MAX_BPD]),
+		(float)atof(press[STAT_MAX_BPS]),
+		(float)atof(rate[STAT_MAX]));
+	printf("%8s |%6.2fF%4c|%6.1f -%6.1f mm Hg | %5.1f bpm\n", 
+		"Average", 
+		(float)atof(temp[STAT_AVERAGE]), ' ',
+		(float)atof(press[STAT_AVERAGE_BPD]),
+		(float)atof(press[STAT_AVERAGE_BPS]),
+		(float)atof(rate[STAT_AVERAGE]));
+	printf("%8s |%6.2fF%4c|%6.1f -%6.1f mm Hg | %5.1f bpm\n", 
+		"StdDev", 
+		(float)atof(temp[STAT_DEVIATION]), ' ',
+		(float)atof(press[STAT_DEVIATION_BPD]),
+		(float)atof(press[STAT_DEVIATION_BPS]),
+		(float)atof(rate[STAT_DEVIATION]));
 	printf("%s\n", "---------+-----------+---------------------+------------");
 }
 
@@ -449,8 +660,7 @@ void getStatValues(int startTime, int endTime) {
 int main(int argc, const char** argv) {
 	char menuOption = 0;
 	char* fileLocation = NULL;
-	int hasFileLocation = false;
-	int hasTimes = false;
+	int hasFileLocation = false, hasTimes = false;
 	int startTime = 0, endTime = 0, time = 0;
 
 	do {
@@ -466,10 +676,10 @@ int main(int argc, const char** argv) {
 				break;
 			case 'b':
 			case 'B':
-				startTime = getTime("start ", minTime);
+				startTime = getTime("start ", MIN_TIME);
 				endTime = getTime("end ", startTime);
 				hasTimes = true;
-				printf("%s\n", "Complete updating time frame");
+				printf("%s\n", "Complete updating time interval");
 				break;
 			case 'c':
 			case 'C':
@@ -477,7 +687,8 @@ int main(int argc, const char** argv) {
 					printf("%s\n", "Error: no data");
 				}
 				else {
-					time = getTime("", minTime);
+					time = getTime("", MIN_TIME);
+					printf("\n");
 					getHealthScore(time);
 				}
 				break;
@@ -487,12 +698,11 @@ int main(int argc, const char** argv) {
 					printf("%s\n", "Error: no data");
 				}
 				else if (!hasTimes) {
-					printf("%s\n", "Error: no time frame");
+					printf("%s\n", "Error: no time interval");
 				}
 				else {
 					getStatValues(startTime, endTime);
 				}
-				break;
 				break;
 			case 'e':
 			case 'E':
